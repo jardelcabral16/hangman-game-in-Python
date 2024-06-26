@@ -6,6 +6,6 @@ The user can ask for hints (up to three) and try to guess the whole word instead
 
 The hangman figure is drawn before each user input.
 
-A function to clear the terminal is used throughout the program. It was made using Windows 'CLS' command to do that. 
+A function to clear the terminal is used throughout the program. It was made using Windows 'CLS' command. 
 
 The program may need some adjustments to work on other Operating Systems 
