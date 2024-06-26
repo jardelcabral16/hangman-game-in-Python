@@ -134,7 +134,7 @@ def get_and_check_whole_word_guess() :
         
 
 def print_introduction() :
-    clear_terminal()
+    clear_terminal(0.1)
     print("--- Hangman: contries edition ---")
     print("\nEach time you guess it right, you can continue to play.")
     print("\nYou can ask for hints up to three times by typing 'hint'.")
