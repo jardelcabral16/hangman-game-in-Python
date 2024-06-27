@@ -7,15 +7,23 @@ import drawed_hangman
 
 MAXIMUM_NUMBER_OF_WRONG_GUESSES = 5
 MAXIMUM_NUMBER_OF_HINTS = 3
-HIDDEN_SYMBOL = "_"
+"""Program only support the above values
 
+if you want to change them, then you will need to alter the number of 
+hints present in 'wordlist.csv' or drawed hangman in 'drawed_hangman.py'
+to match the changed values. 
+"""
+
+HIDDEN_SYMBOL = "_"
+# This will be the symbol that covers the chosen word.
+# Fell free to change it
 
 def get_secret_word() :
     lines = []
 
     with open("wordlist.csv", "r") as file :
         reader = csv.DictReader(file)
-
+        
         for row in reader :
             lines.append(row)
         
@@ -23,10 +31,11 @@ def get_secret_word() :
 
 CHOSEN_WORD_AND_HINTS = get_secret_word()
 SECRET_WORD = CHOSEN_WORD_AND_HINTS['country']
-HINTS = [CHOSEN_WORD_AND_HINTS['hint 1'], 
-        CHOSEN_WORD_AND_HINTS['hint 2'], 
-        CHOSEN_WORD_AND_HINTS['hint 3']]
-
+HINTS = [
+    CHOSEN_WORD_AND_HINTS['hint 1'], 
+    CHOSEN_WORD_AND_HINTS['hint 2'], 
+    CHOSEN_WORD_AND_HINTS['hint 3']
+    ]
 
 wrong_guess_counter = 0
 hints_asked_counter = 0
@@ -57,8 +66,8 @@ def play_game_logic() :
         
         act_based_on_scenario(user_guess, scenario)  
         
-        loss_condition = (wrong_guess_counter >= MAXIMUM_NUMBER_OF_WRONG_GUESSES)
-        win_condition = (hidden_secret_word.lower() == SECRET_WORD.lower())
+        loss_condition = wrong_guess_counter >= MAXIMUM_NUMBER_OF_WRONG_GUESSES
+        win_condition = hidden_secret_word.lower() == SECRET_WORD.lower()
            
         clear_terminal(1)
 
@@ -73,25 +82,36 @@ def play_game_logic() :
 
 def check_guess(user_guess) :
     global wrong_guess_counter
+
+    remaining_guesses = MAXIMUM_NUMBER_OF_WRONG_GUESSES - wrong_guess_counter
+
     if user_guess.lower() == "hint" :
         return "hint"
+    
     elif user_guess.lower() == "guess" :
         return "guess"
+    
     elif user_guess[:1].lower() not in SECRET_WORD.lower() :
         if wrong_guess_counter < MAXIMUM_NUMBER_OF_WRONG_GUESSES - 2:
-            print("\nThere's no '" + user_guess + "' in the word. You still have",  MAXIMUM_NUMBER_OF_WRONG_GUESSES - (wrong_guess_counter + 1), "guesses.\n")
+            print("\nThere's no '" + user_guess + "' in the word.")
+            print("You still have", remaining_guesses, "guesses.\n")
             return "wrong guess"
+        
         elif wrong_guess_counter == MAXIMUM_NUMBER_OF_WRONG_GUESSES - 2 :
-            print("\nThere's no '" + user_guess + "' in the word. You have one more guess.\n")
+            print("\nThere's no '" + user_guess + "' in the word.")
+            print("You have one more guess.\n")
             return "wrong guess"
+        
         else :
             wrong_guess_counter = MAXIMUM_NUMBER_OF_WRONG_GUESSES
             print("\nYou used up all your guesses.")
             return "wrong guess"
 
     elif user_guess[:1].lower() in hidden_secret_word.lower() :
-        print("Try entering another letter. The letter '" + user_guess + "' is already in the word.\n")
+        print("The letter '" + user_guess + "' is already in the word.\n")
+        print("Try entering another letter.")
         return "already made guess"
+    
     else :
         print("There's a letter '" + user_guess + "' in the word. Good job!\n")
         return "correct guess"        
@@ -103,13 +123,17 @@ def act_based_on_scenario(user_guess, scenario) :
     match scenario :
         case "wrong guess" :
             wrong_guess_counter = wrong_guess_counter + 1
+        
         case "already made guess" :
             pass
+        
         case "correct guess" :
             uncover_hidden_word(user_guess)
+        
         case "hint" :
             hints_asked_counter = hints_asked_counter + 1
             print_hint()
+        
         case "guess" :
             get_and_check_whole_word_guess()
 
@@ -117,23 +141,25 @@ def act_based_on_scenario(user_guess, scenario) :
 def uncover_hidden_word(user_guess) :
     global hidden_secret_word
     
-    after_guess_hidden_word = ""
+    new_hidden_word = ""
 
     for i in range(len(SECRET_WORD)) :
         if SECRET_WORD[i].lower() == user_guess[:1].lower() :
-            after_guess_hidden_word = after_guess_hidden_word + SECRET_WORD[i]
+            new_hidden_word = new_hidden_word + SECRET_WORD[i]
+        
         elif hidden_secret_word[i] != HIDDEN_SYMBOL :
-            after_guess_hidden_word = after_guess_hidden_word + hidden_secret_word[i] 
+            new_hidden_word = new_hidden_word + hidden_secret_word[i] 
+        
         else :
-            after_guess_hidden_word = after_guess_hidden_word + HIDDEN_SYMBOL
+            new_hidden_word = new_hidden_word + HIDDEN_SYMBOL
     
-    hidden_secret_word = after_guess_hidden_word
+    hidden_secret_word = new_hidden_word
             
 
 def get_and_check_whole_word_guess() :
     global hidden_secret_word, wrong_guess_counter
 
-    user_guess = input("Enter the word you think it is the answer: ").strip(" ")
+    user_guess = input("Guess the word: ").strip(" ")
         
     if user_guess.lower() == SECRET_WORD.lower() :
         hidden_secret_word = SECRET_WORD 
@@ -143,13 +169,16 @@ def get_and_check_whole_word_guess() :
 
 def print_introduction() :
     clear_terminal(0.25)
+    
     print("\n--- Hangman: contries edition ---")
     print("\nEach time you guess it right, you can continue to play.")
-    print("\nYou can ask for hints up to", MAXIMUM_NUMBER_OF_HINTS, "times by typing 'hint'.")
-    print("\nYou can try your luck and guess the whole word at any point by typing 'guess'.")
-    print("Be aware that if you do that and guess it wrong, you lose the game!") 
+    print("\nYou can ask for hints up to", MAXIMUM_NUMBER_OF_HINTS, end="")
+    print(" times by typing 'hint'.")
+    print("\nTry your luck and guess the whole word by typing 'guess'.")
+    print("Be aware! If you do that and guess it wrong, you lose the game!") 
     print("Otherwise will only be guessing letters")
-    print("\nYou can only guess it wrong at most", MAXIMUM_NUMBER_OF_WRONG_GUESSES, "times.")
+    print("\nYou can only guess it wrong at most", end=" ")
+    print(MAXIMUM_NUMBER_OF_WRONG_GUESSES, "times")
     print("\nBegin!", end="\n\n")
 
 
@@ -157,14 +186,19 @@ def draw_hangman_and_hidden_word() :
     match wrong_guess_counter :
         case 0 :
             print(drawed_hangman.no_errors_hangman)
+        
         case 1 :
             print(drawed_hangman.one_error_hangman)
+        
         case 2 :
             print(drawed_hangman.two_errors_hangman)
+        
         case 3 :
             print(drawed_hangman.three_errors_hangman)
+        
         case 4 :
             print(drawed_hangman.four_errors_hangman)
+        
         case 5 :
             print(drawed_hangman.five_errors_hangman)
     
@@ -173,8 +207,11 @@ def draw_hangman_and_hidden_word() :
 
 
 def print_remaining_number_of_guesses_and_hints() :
-    print("Remaining number of guesses:", MAXIMUM_NUMBER_OF_WRONG_GUESSES - wrong_guess_counter)
-    print("Remaining number of hints:", MAXIMUM_NUMBER_OF_HINTS - hints_asked_counter)
+    remaining_guesses = MAXIMUM_NUMBER_OF_WRONG_GUESSES - wrong_guess_counter
+    remaining_hints = MAXIMUM_NUMBER_OF_HINTS - hints_asked_counter
+    
+    print("Remaining number of guesses:", remaining_guesses)
+    print("Remaining number of hints:", remaining_hints)
     print()
 
 
@@ -184,10 +221,13 @@ def print_hint() :
     match hints_asked_counter :
         case 1 :
             print(HINTS[hints_asked_counter - 1])
+        
         case 2 :
             print(HINTS[hints_asked_counter - 1])
+        
         case 3 :
             print(HINTS[hints_asked_counter - 1])
+        
         case _ :
             print("All hints used. You cannot ask for more")
             hints_asked_counter = MAXIMUM_NUMBER_OF_HINTS
